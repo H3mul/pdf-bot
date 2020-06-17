@@ -13,6 +13,7 @@ function createPdfGenerator(storagePath, options = {}, storagePlugins = {}) {
     var generationId = uuid()
     var generated_at = utils.getCurrentDateTimeAsString()
     var jobId = job.id
+    var jobOptions = Object.assign(options, job.options)
 
     function createResponseObject() {
       return {
@@ -22,7 +23,7 @@ function createPdfGenerator(storagePath, options = {}, storagePlugins = {}) {
     }
 
     return htmlPdf
-      .create(url, options)
+      .create(url, jobOptions)
       .then((pdf) => {
         var pdfPath = path.join(storagePath, 'pdf', (uuid() + '.pdf'))
 

@@ -3,8 +3,11 @@ var debug = require('debug')('pdf:db')
 var error = require('./error')
 var webhook = require('./webhook')
 var utils = require('./utils')
+var queueOptions = {};
 
 function createQueue (db, options = {}) {
+  queueOptions = options
+
   var createQueueMethod = function (func) {
     return function() {
       var args = Array.prototype.slice.call(arguments, 0)
@@ -33,7 +36,8 @@ function addToQueue (db, data) {
   var createdAt = utils.getCurrentDateTimeAsString()
 
   var defaults = {
-    meta: {}
+    meta: {},
+    options: {}
   }
 
   if (!data.url || !utils.isValidUrl(data.url)) {
@@ -43,6 +47,11 @@ function addToQueue (db, data) {
   if (data.meta && typeof data.meta !== 'object') {
     return error.createErrorResponse(error.ERROR_META_IS_NOT_OBJECT)
   }
+
+  if (data.options && typeof data.options !== 'object') {
+    return Promise.resolve(error.createErrorResponse(error.ERROR_OPTIONS_ARE_NOT_OBJECT))
+  }
+  data.options = _filterKeys(data.options, queueOptions.allowedJobOptions, [])
 
   data = Object.assign(defaults, data, {
     id: id,
@@ -180,6 +189,15 @@ function _markAsCompleted (db, id) {
 
 function _setStorage (db, id, storage) {
   return db.setStorage(id, storage)
+}
+
+function _filterKeys(unfiltered, whitelist, blacklist) {
+    return Object.keys(unfiltered)
+        .filter(k => (whitelist.length == 0 || whitelist.includes(k)) && !blacklist.includes(k))
+        .reduce((obj, key) => {
+            obj[key] = unfiltered[key]
+            return obj
+        }, {})
 }
 
 module.exports = createQueue

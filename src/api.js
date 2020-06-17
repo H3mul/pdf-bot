@@ -27,6 +27,7 @@ function createApi(createQueue, options = {}) {
     queue
       .addToQueue({
         url: req.body.url,
+        options: req.body.options || {},
         meta: req.body.meta || {}
       }).then(function (response) {
         queue.close()
