@@ -37,11 +37,11 @@ function addToQueue (db, data) {
   }
 
   if (!data.url || !utils.isValidUrl(data.url)) {
-    return error.createErrorResponse(error.ERROR_INVALID_URL)
+    return Promise.resolve(error.createErrorResponse(error.ERROR_INVALID_URL))
   }
 
   if (data.meta && typeof data.meta !== 'object') {
-    return error.createErrorResponse(error.ERROR_META_IS_NOT_OBJECT)
+    return Promise.resolve(error.createErrorResponse(error.ERROR_META_IS_NOT_OBJECT))
   }
 
   data = Object.assign(defaults, data, {
