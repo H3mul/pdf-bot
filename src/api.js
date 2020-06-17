@@ -8,6 +8,12 @@ var childProcess = require('child_process')
 function createApi(createQueue, options = {}) {
   var api = express()
   api.use(bodyParser.json())
+  api.use (function (e, req, res, next) {
+    if (e instanceof SyntaxError) {
+      res.status(400).json(error.createErrorResponse(error.ERROR_INVALID_JSON_REQUEST))
+    }
+    else next()
+  })
 
   var token = options.token
 
