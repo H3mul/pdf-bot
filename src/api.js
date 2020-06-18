@@ -44,6 +44,33 @@ function createApi(createQueue, options = {}) {
       })
   })
 
+  api.get('/job/:jobId/', function(req, res) {
+    var queue = createQueue()
+    var authHeader = req.get('Authorization')
+
+    if (token && (!authHeader || authHeader.replace(/Bearer (.*)$/i, '$1') !== token)) {
+      res.status(401).json(error.createErrorResponse(error.ERROR_INVALID_TOKEN))
+      return
+    }
+
+    if (!req.params.jobId) {
+    }
+
+    queue.getById(req.params.jobId)
+      .then(function (job) {
+        queue.close()
+
+        if (!job) {
+          res.status(404).json(error.createErrorResponse(error.ERROR_INVALID_JOB_ID))
+          return
+        }
+        else {
+          res.status(200).json(job)
+          return
+        }
+      })
+  })
+
   return api
 }
 
