@@ -54,7 +54,8 @@ var defaultConfig = {
     webhookMaxTries: 5,
     lowDbOptions: {
 
-    }
+    },
+    allowedJobOptions: [],
   },
   storage: {
     /*
@@ -367,13 +368,15 @@ program
   .command('push [url]')
   .description('Push new job to the queue')
   .option('-m, --meta [meta]', 'JSON string with meta data. Default: \'{}\'')
+  .option('-o, --job-options [job-options]', 'JSON string with job option data. Default: \'{}\'')
   .action(function (url, options) {
     openConfig()
 
     return queue
       .addToQueue({
         url: url,
-        meta: JSON.parse(options.meta || '{}')
+        meta: JSON.parse(options.meta || '{}'),
+        options: JSON.parse(options.jobOptions || '{}')
       })
       .then(function (response) {
         queue.close()
@@ -553,8 +556,8 @@ function listJobs(queue, failed = false, limit) {
         limit
       ).then(function (response) {
         var table = new Table({
-          head: ['ID', 'URL', 'Meta', 'PDF Gen. tries', 'Created at', 'Completed at'],
-          colWidths: [40, 40, 50, 20, 20, 20]
+          head: ['ID', 'URL', 'Meta', 'Options', 'PDF Gen. tries', 'Created at', 'Completed at'],
+          colWidths: [40, 40, 50, 50, 20, 20, 20]
         });
 
         for(var i in response) {
@@ -564,6 +567,7 @@ function listJobs(queue, failed = false, limit) {
             job.id,
             job.url,
             JSON.stringify(job.meta),
+            JSON.stringify(job.options),
             job.generations.length,
             formatDate(job.created_at),
             formatDate(job.completed_at)
