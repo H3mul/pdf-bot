@@ -54,12 +54,11 @@ function ping (job, options) {
   var sent_at = utils.getCurrentDateTimeAsString()
 
   function createResponse (response, error) {
-    var status = response.status
 
     return getContentBody(response).then(body => {
       return {
         id: requestId,
-        status: response.status,
+        status: response.status || '',
         method: requestOptions.method,
         payload: bodyRaw,
         response: body,
