@@ -8,12 +8,12 @@ var utils = require('./utils')
 
 function createPdfGenerator(storagePath, options = {}, storagePlugins = {}) {
   return function createPdf (url, job) {
-    debug('Creating PDF for url %s with options %s', url, JSON.stringify(options))
-
     var generationId = uuid()
     var generated_at = utils.getCurrentDateTimeAsString()
     var jobId = job.id
     var jobOptions = Object.assign(options, job.options)
+
+    debug('Creating PDF for url %s with options %s', url, JSON.stringify(jobOptions))
 
     function createResponseObject() {
       return {
