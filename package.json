@@ -40,7 +40,9 @@
     "pg": "^7.4.0",
     "prompt": "^1.0.0",
     "s3": "^4.4.0",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "deepmerge": "^4.2.2",
+    "is-plain-object": "^3.0.0"
   },
   "devDependencies": {
     "assert": "^1.4.1",

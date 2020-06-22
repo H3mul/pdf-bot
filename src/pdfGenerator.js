@@ -5,13 +5,15 @@ var debug = require('debug')('pdf:generator')
 var error = require('./error')
 var uuid = require('uuid')
 var utils = require('./utils')
+var merge = require('deepmerge')
+var isPlainObject = require('is-plain-object')
 
 function createPdfGenerator(storagePath, options = {}, storagePlugins = {}) {
   return function createPdf (url, job) {
     var generationId = uuid()
     var generated_at = utils.getCurrentDateTimeAsString()
     var jobId = job.id
-    var jobOptions = Object.assign(options, job.options)
+    var jobOptions = _merge(options, job.options)
 
     debug('Creating PDF for url %s with options %s', url, JSON.stringify(jobOptions))
 
@@ -80,6 +82,10 @@ function createPdfGenerator(storagePath, options = {}, storagePlugins = {}) {
         return Object.assign(createResponseObject(), response)
       })
   }
+}
+
+function _merge(target, source) {
+    return merge(target, source, {isMergeableObject: isPlainObject})
 }
 
 module.exports = createPdfGenerator
