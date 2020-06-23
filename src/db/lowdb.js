@@ -45,6 +45,7 @@ module.exports = createLowDb
 
 function pushToQueue (db, data) {
   db
+    .read()
     .get('queue')
     .push(data)
     .write()
@@ -58,6 +59,7 @@ function close() {
 
 function getAllUnfinished (db, shouldWait, maxTries = 5) {
   return db
+    .read()
     .get('queue')
     .filter(function (job) {
       if (job.completed_at !== null) {
@@ -85,13 +87,14 @@ function getAllUnfinished (db, shouldWait, maxTries = 5) {
 
 function getById (db, id) {
   return db
+    .read()
     .get('queue')
     .find({ id: id })
     .value()
 }
 
 function getList (db, failed = false, completed = false, limit) {
-  var query = db.get('queue')
+  var query = db.read().get('queue')
 
   query = query.filter(function (job) {
     // failed jobs
@@ -116,6 +119,7 @@ function getList (db, failed = false, completed = false, limit) {
 
 function getNextWithoutSuccessfulPing (db, shouldWait, maxTries = 5) {
   return db
+    .read()
     .get('queue')
     .filter(function (job) {
       var currentTries = job.pings.length
@@ -151,11 +155,11 @@ function getNextWithoutSuccessfulPing (db, shouldWait, maxTries = 5) {
 }
 
 function isBusy (db) {
-  return db.get('is_busy').value() || false
+  return db.read().get('is_busy').value() || false
 }
 
 function purge (db, failed = false, pristine = false, maxTries = 5) {
-  var query = db.get('queue').slice(0)
+  var query = db.read().get('queue').slice(0)
 
   query = query.filter(function (job) {
     // failed jobs
@@ -179,12 +183,12 @@ function purge (db, failed = false, pristine = false, maxTries = 5) {
   var queue = query.value()
 
   for(var i in queue) {
-    db.get('queue').remove({ id: queue[i].id }).write()
+    db.read().get('queue').remove({ id: queue[i].id }).write()
   }
 }
 
 function setIsBusy (db, isBusy) {
-  db.set('is_busy', isBusy).write()
+  db.read().set('is_busy', isBusy).write()
 }
 
 function logGeneration (db, id, response) {
@@ -194,6 +198,7 @@ function logGeneration (db, id, response) {
   generations.push(response)
 
   return db
+    .read()
     .get('queue')
     .find({ id: id })
     .assign({ generations: generations })
@@ -207,6 +212,7 @@ function logPing (db, id, response) {
   pings.push(response)
 
   return db
+    .read()
     .get('queue')
     .find({ id: id })
     .assign({ pings: pings })
@@ -217,6 +223,7 @@ function markAsCompleted (db, id) {
   var completed_at = utils.getCurrentDateTimeAsString()
 
   return db
+    .read()
     .get('queue')
     .find({ id: id })
     .assign({ completed_at: completed_at })
@@ -225,6 +232,7 @@ function markAsCompleted (db, id) {
 
 function setStorage (db, id, storage) {
   return db
+    .read()
     .get('queue')
     .find({ id: id })
     .assign({ storage: storage })
