@@ -74,8 +74,8 @@ function close (db) {
 function pushToQueue (db, data) {
   return db
     .query(
-      `INSERT INTO jobs (id, url, meta, created_at) VALUES($1, $2, $3, $4)`,
-      [data.id, data.url, data.meta, data.created_at]
+      `INSERT INTO jobs (id, url, meta, options, created_at) VALUES($1, $2, $3, $4, $5)`,
+      [data.id, data.url, data.meta, data.options, data.created_at]
     )
     .then(function() {
       return data
@@ -242,6 +242,7 @@ function migrate(db) {
       id character varying(255),
       url text,
       meta jsonb default '{}'::json,
+      options jsonb default '{}'::json,
       generations jsonb default '[]'::json,
       pings jsonb default '[]'::json,
       storage jsonb default '{}'::json,
