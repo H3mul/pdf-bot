@@ -178,16 +178,14 @@ function isBusy (db) {
 
 function purge (db, failed = false, pristine = false, maxTries = 5) {
   var query = 'DELETE FROM jobs WHERE (completed_at is not null)'
-  var params = []
+  var params = [ maxTries ]
 
   if (failed) {
     query += ' OR (completed_at is null and jsonb_array_length(generations) >= $1)'
-    params.push(maxTries)
   }
 
   if (pristine) {
-    query += ' OR (completed_at is null and jsonb_array_length(generations) < $2)'
-    params.push(maxTries)
+    query += ' OR (completed_at is null and jsonb_array_length(generations) < $1)'
   }
 
   return db.query(query, params)
