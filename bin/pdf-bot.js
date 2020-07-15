@@ -478,6 +478,90 @@ program
       .catch(handleDbError)
   })
 
+program
+  .command('shift:seq')
+  .description('Run all unfinished jobs in the queue in parallel')
+  .action(function (url) {
+    openConfig()
+
+    return queue.isBusy()
+      .then(function (isBusy) {
+        if (isBusy) {
+          queue.close()
+          process.exit(0)
+        }
+
+        var shiftAll = async function () {
+          var maxTries = configuration.queue.generationMaxTries
+          var retryStrategy = configuration.queue.generationRetryStrategy
+          var parallelism = configuration.queue.parallelism
+          var runningJobs = []
+
+          function consumeJob(job) {
+            return processJob(job, clone(configuration), false)
+              .then(function() {
+                // remove itself from running jobs
+                const idx = runningJobs.findIndex(p => p.id === job.id)
+                runningJobs.splice(idx, 1)
+              })
+          }
+
+          async function checkForJobs() {
+            return queue.getAllUnfinished(retryStrategy, maxTries)
+          }
+
+          function timeoutPromise(t=1) {
+            return new Promise((resolve, reject) => setTimeout(resolve, t*1000))
+          }
+
+          while (true) {
+            jobs = await checkForJobs()
+
+            // Filter out jobs currently running
+            jobs = jobs.filter(j => !runningJobs.map(p => p.id).includes(j.id))
+
+            // If we dont have new jobs and all jobs finished, we are done
+            if (jobs.length === 0 && runningJobs.length === 0) {
+              break
+            }
+
+            // Keep concurrent job list packed to maximum
+            n = Math.min(jobs.length, parallelism - runningJobs.length)
+            debug("Adding more jobs to running jobs:", n)
+            for (var i = 0; i < n; i++) {
+              job = jobs.shift()
+              runningJobs.push({
+                'promise': consumeJob(job),
+                'id': job.id
+              })
+            }
+
+            // Wait for a job to finish
+            promises = runningJobs.map(p => p.promise)
+
+            // If we are not at max parallelism, also wait for a timeout to poll
+            // for jobs again
+            if (runningJobs.length < parallelism) {
+              promises.push(timeoutPromise(1))
+            }
+
+            await Promise.race(promises)
+          }
+
+          // clean up and exit
+          queue.setIsBusy(false).then(function() {
+            queue.close()
+            process.exit(0)
+          })
+        }
+
+        return queue.setIsBusy(true).then(async function () {
+          await shiftAll()
+        })
+      })
+      .catch(handleDbError)
+  })
+
 program.parse(process.argv)
 
 if (!process.argv.slice(2).length) {
