@@ -527,7 +527,9 @@ program
 
             // Keep concurrent job list packed to maximum
             n = Math.min(jobs.length, parallelism - runningJobs.length)
-            debug("Adding more jobs to running jobs:", n)
+            if (n > 0) {
+              debug(`Adding ${n} more job(s) to running job list.`)
+            }
             for (var i = 0; i < n; i++) {
               job = jobs.shift()
               runningJobs.push({
