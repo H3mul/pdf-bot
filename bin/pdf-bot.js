@@ -498,8 +498,11 @@ program
           var runningJobs = []
 
           function consumeJob(job) {
+            const start = process.hrtime()
             return processJob(job, clone(configuration), false)
               .then(function() {
+                const time = process.hrtime(start)
+                debug(`Job time: ${time[0]}s ${time[1]/1e6}ms`)
                 // remove itself from running jobs
                 const idx = runningJobs.findIndex(p => p.id === job.id)
                 runningJobs.splice(idx, 1)
