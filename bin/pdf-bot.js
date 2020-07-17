@@ -696,3 +696,14 @@ function handleDbError(e) {
   queue.close()
   process.exit(1)
 }
+
+async function handleSignal(signal) {
+  if (queue) {
+    await queue.setIsBusy(false)
+    queue.close()
+  }
+  process.exit(1)
+}
+
+process.on('SIGINT', handleSignal);
+process.on('SIGTERM', handleSignal);
