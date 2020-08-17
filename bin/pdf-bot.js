@@ -355,7 +355,7 @@ program
   .action(function (options) {
     openConfig()
 
-    return queue.purge(options.failed, options.new)
+    return queue.purge(options.failed, options.new, configuration.queue.generationMaxTries)
       .then(function () {
         queue.close()
         console.log('The queue was purged.')

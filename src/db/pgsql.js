@@ -178,7 +178,7 @@ function isBusy (db) {
 
 function purge (db, failed = false, pristine = false, maxTries = 5) {
   var query = 'DELETE FROM jobs WHERE (completed_at is not null)'
-  var params = [ maxTries ]
+  var params = (failed || pristine) ? [ maxTries ] : []
 
   if (failed) {
     query += ' OR (completed_at is null and jsonb_array_length(generations) >= $1)'
