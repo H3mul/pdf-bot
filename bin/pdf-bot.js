@@ -485,10 +485,13 @@ program
   .action(function (url) {
     openConfig()
 
+    debug('Starting shift:seq');
+
     return queue.isBusy()
       .then(function (isBusy) {
         if (isBusy) {
           queue.close()
+          debug('Ending shift:seq (db busy lock enabled)');
           process.exit(0)
         }
 
@@ -497,16 +500,22 @@ program
           var retryStrategy = configuration.queue.generationRetryStrategy
           var parallelism = configuration.queue.parallelism
           var runningJobs = []
+          var jobs = []
+
+          function printQueueState () {
+            debug(`Job queue state: ${runningJobs.length} running; ${jobs.length} pending.`);
+          }
 
           function consumeJob(job) {
             const start = process.hrtime()
             return processJob(job, clone(configuration), false)
               .then(function() {
                 const time = process.hrtime(start)
-                debug(`Job time: ${time[0]}s ${time[1]/1e6}ms`)
+                debug(`Job ${job.id} completed in ${time[0]}s ${time[1]/1e6}ms`)
                 // remove itself from running jobs
                 const idx = runningJobs.findIndex(p => p.id === job.id)
                 runningJobs.splice(idx, 1)
+                printQueueState()
               })
           }
 
@@ -531,15 +540,16 @@ program
 
             // Keep concurrent job list packed to maximum
             n = Math.min(jobs.length, parallelism - runningJobs.length)
-            if (n > 0) {
-              debug(`Adding ${n} more job(s) to running job list.`)
-            }
             for (var i = 0; i < n; i++) {
               job = jobs.shift()
               runningJobs.push({
                 'promise': consumeJob(job),
                 'id': job.id
               })
+            }
+            if (n > 0) {
+              debug(`Added ${n} more job(s) to running pool.`)
+              printQueueState()
             }
 
             // Wait for a job to finish
@@ -550,13 +560,13 @@ program
             if (runningJobs.length < parallelism) {
               promises.push(timeoutPromise(1))
             }
-
             await Promise.race(promises)
           }
 
           // clean up and exit
           queue.setIsBusy(false).then(function() {
             queue.close()
+            debug('Ending shift:seq (no more jobs)');
             process.exit(0)
           })
         }
@@ -589,7 +599,6 @@ function processJob(job, configuration, exitProcess = true) {
         process.exit(1)
       }
     } else {
-      console.log('Job ID ' + job.id + ' was processed.')
       if (exitProcess) {
         queue.close()
         process.exit(0)
@@ -622,8 +631,9 @@ function openConfig(delayQueueCreation = false) {
     throw new Error('Whoops! Looks like your storage folder does not exist. You should run pdf-bot install.')
   }
 
-  if (!fs.existsSync(path.join(configuration.storagePath, 'pdf'))) {
-    throw new Error('There is no pdf folder in the storage folder. Create it: storage/pdf')
+  var storagePathPdf = path.join(configuration.storagePath, 'pdf');
+  if (!fs.existsSync(storagePathPdf)) {
+    throw new Error('There is no pdf folder in the storage folder. Create it: ' + storagePathPdf);
   }
 
   function initiateQueue() {

@@ -15,7 +15,7 @@ function createPdfGenerator(storagePath, options = {}, storagePlugins = {}, time
     var jobId = job.id
     var jobOptions = _merge(options, job.options)
 
-    debug('Creating PDF for url %s with options %s', url, JSON.stringify(jobOptions))
+    debug('Creating PDF for url %s (id: %s)', url, jobId)
 
     function createResponseObject() {
       return {
