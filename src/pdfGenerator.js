@@ -8,7 +8,7 @@ var utils = require('./utils')
 var merge = require('deepmerge')
 var isPlainObject = require('is-plain-object')
 
-function createPdfGenerator(storagePath, options = {}, storagePlugins = {}) {
+function createPdfGenerator(storagePath, options = {}, storagePlugins = {}, timeout = 0) {
   return function createPdf (url, job) {
     var generationId = uuid()
     var generated_at = utils.getCurrentDateTimeAsString()
@@ -24,8 +24,18 @@ function createPdfGenerator(storagePath, options = {}, storagePlugins = {}) {
       }
     }
 
-    return htmlPdf
-      .create(url, jobOptions)
+    var jobTimeout, timeoutPromise
+    var pdfJob = htmlPdf.create(url, jobOptions)
+    timeoutPromise = new Promise((resolve, reject) => {
+      // Never resolve or reject
+      if (!timeout) return
+      jobTimeout = setTimeout(_ => { reject('Timed out waiting for job') }, timeout)
+    })
+
+    return Promise.race([pdfJob, timeoutPromise])
+      .finally(_ => {
+        clearTimeout(jobTimeout)
+      })
       .then((pdf) => {
         var pdfPath = path.join(storagePath, 'pdf', (uuid() + '.pdf'))
 

@@ -56,6 +56,7 @@ var defaultConfig = {
 
     },
     allowedJobOptions: [],
+    jobTimeout: 120000
   },
   storage: {
     /*
@@ -576,8 +577,9 @@ if (!process.argv.slice(2).length) {
 function processJob(job, configuration, exitProcess = true) {
   var generatorOptions = configuration.generator
   var storagePlugins = configuration.storage
+  var pdfJobTimeout = configuration.queue.jobTimeout
 
-  var generator = createPdfGenerator(configuration.storagePath, generatorOptions, storagePlugins)
+  var generator = createPdfGenerator(configuration.storagePath, generatorOptions, storagePlugins, pdfJobTimeout)
 
   return queue.processJob(generator, job, configuration.webhook).then(function (response) {
     if (error.isError(response)) {
