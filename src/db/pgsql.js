@@ -248,8 +248,8 @@ function migrate(db) {
       completed_at timestamp without time zone default null
     );
     CREATE TABLE worker (
-      busy boolean default false
+      busy integer default null
     );
-    INSERT INTO worker (busy) VALUES(false);
+    INSERT INTO worker (busy) VALUES(null);
   `)
 }

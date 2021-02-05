@@ -97,8 +97,20 @@ function getNextWithoutSuccessfulPing (db, shouldWait, maxTries = 5) {
   return db.getNextWithoutSuccessfulPing(shouldWait, maxTries)
 }
 
-function isBusy (db) {
-  return db.isBusy()
+// Check if there is a PID lock in the DB, clear stale PID locks
+async function isBusy (db) {
+  var pid = await db.isBusy()
+  if (pid) {
+    // Clear stale lock
+    if (!_pidIsAlive(pid)) {
+      debug('Clearing stale PID lock ' + pid)
+      await setIsBusy(db, false)
+      return false
+    }
+    // Process is still alive and locked
+    return true
+  }
+  return false
 }
 
 function purge (db, failed = false, pristine = false, maxTries = 5) {
@@ -106,7 +118,8 @@ function purge (db, failed = false, pristine = false, maxTries = 5) {
 }
 
 function setIsBusy(db, isBusy) {
-  return db.setIsBusy(isBusy)
+  var pid = (isBusy) ? process.pid : null
+  return db.setIsBusy(pid)
 }
 
 // ==========
@@ -198,6 +211,16 @@ function _filterKeys(unfiltered, whitelist, blacklist) {
             obj[key] = unfiltered[key]
             return obj
         }, {})
+}
+
+function _pidIsAlive (pid) {
+  try {
+    process.kill(pid, 0)
+    return true
+  }
+  catch {
+    return false
+  }
 }
 
 module.exports = createQueue
