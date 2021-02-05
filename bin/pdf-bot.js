@@ -540,6 +540,9 @@ program
 
             // Keep concurrent job list packed to maximum
             n = Math.min(jobs.length, parallelism - runningJobs.length)
+
+            if (n > 0) debug(`Adding ${n} more job(s) to the running queue.`)
+
             for (var i = 0; i < n; i++) {
               job = jobs.shift()
               runningJobs.push({
@@ -547,10 +550,7 @@ program
                 'id': job.id
               })
             }
-            if (n > 0) {
-              debug(`Added ${n} more job(s) to running pool.`)
-              printQueueState()
-            }
+            if (n > 0) printQueueState()
 
             // Wait for a job to finish
             promises = runningJobs.map(p => p.promise)
