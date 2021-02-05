@@ -36,7 +36,9 @@ function createPostgresDb(options = {}) {
 
   return function (pdfBotConfiguration) {
     var db = new pg.Client(parseConfig());
-    db.connect()
+    db.connect().catch(function(e) {
+      console.error("pgSQL Connection error: " + e.message)
+    })
 
     var createDbMethod = function (func) {
       return function() {

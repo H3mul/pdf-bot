@@ -705,7 +705,8 @@ function formatDate(input) {
 
 async function cleanup() {
   if (queue) {
-    await queue.setIsBusy(false)
+    // Try to disable DB lock before exiting, might not work.
+    await queue.setIsBusy(false).catch(_ => {})
     queue.close()
   }
   process.exit(1)

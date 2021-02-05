@@ -65,6 +65,7 @@ function addToQueue (db, data) {
   debug('Pushing job to queue with data %s', JSON.stringify(data))
 
   return db.pushToQueue(data)
+    .catch(_dbErrorHandler)
 }
 
 function close(db) {
@@ -77,10 +78,12 @@ function close(db) {
 
 function getList (db, failed = false, completed = false, limit) {
   return db.getList(failed, completed, limit)
+    .catch(_dbErrorHandler)
 }
 
 function getById (db, id) {
   return db.getById(id)
+    .catch(_dbErrorHandler)
 }
 
 function getNext (db, shouldWait, maxTries = 5) {
@@ -91,15 +94,18 @@ function getNext (db, shouldWait, maxTries = 5) {
 
 function getAllUnfinished (db, shouldWait, maxTries = 5) {
   return db.getAllUnfinished (shouldWait, maxTries)
+    .catch(_dbErrorHandler)
 }
 
 function getNextWithoutSuccessfulPing (db, shouldWait, maxTries = 5) {
   return db.getNextWithoutSuccessfulPing(shouldWait, maxTries)
+    .catch(_dbErrorHandler)
 }
 
 // Check if there is a PID lock in the DB, clear stale PID locks
 async function isBusy (db) {
   var pid = await db.isBusy()
+    .catch(_dbErrorHandler)
   if (pid) {
     // Clear stale lock
     if (!_pidIsAlive(pid)) {
@@ -115,11 +121,13 @@ async function isBusy (db) {
 
 function purge (db, failed = false, pristine = false, maxTries = 5, age) {
   return db.purge(failed, pristine, maxTries, age)
+    .catch(_dbErrorHandler)
 }
 
 function setIsBusy(db, isBusy) {
   var pid = (isBusy) ? process.pid : null
   return db.setIsBusy(pid)
+    .catch(_dbErrorHandler)
 }
 
 // ==========
@@ -184,12 +192,14 @@ function _logGeneration (db, id, response) {
   debug('Logging try for job ID %s', id)
 
   return db.logGeneration(id, response)
+    .catch(_dbErrorHandler)
 }
 
 function _logPing (db, id, response) {
   debug('Logging ping for job ID %s', id)
 
   return db.logPing(id, response)
+    .catch(_dbErrorHandler)
 }
 
 function _markAsCompleted (db, id) {
@@ -198,10 +208,12 @@ function _markAsCompleted (db, id) {
   debug('Marking job ID %s as completed at %s', id, completed_at)
 
   return db.markAsCompleted(id)
+    .catch(_dbErrorHandler)
 }
 
 function _setStorage (db, id, storage) {
   return db.setStorage(id, storage)
+    .catch(_dbErrorHandler)
 }
 
 function _filterKeys(unfiltered, whitelist, blacklist) {
@@ -221,6 +233,11 @@ function _pidIsAlive (pid) {
   catch {
     return false
   }
+}
+
+function _dbErrorHandler (e) {
+  debug(`DB error: ${e.message}`)
+  return Promise.reject()
 }
 
 module.exports = createQueue

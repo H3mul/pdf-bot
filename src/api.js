@@ -48,6 +48,9 @@ function createApi(createQueue, options = {}) {
         }
 
         res.status(201).json(response)
+      }).catch(function(e) {
+        res.status(500).json()
+        return
       })
   })
 
