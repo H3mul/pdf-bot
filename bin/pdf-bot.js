@@ -703,13 +703,7 @@ function formatDate(input) {
   return (new Date(input)).toLocaleString()
 }
 
-function handleDbError(e) {
-  console.error("DB error")
-  console.error(e)
-  handleSignal()
-}
-
-async function handleSignal(signal) {
+async function cleanup() {
   if (queue) {
     await queue.setIsBusy(false)
     queue.close()
@@ -717,5 +711,13 @@ async function handleSignal(signal) {
   process.exit(1)
 }
 
+function handleDbError(e) {
+  cleanup()
+}
+
 process.on('SIGINT', handleSignal);
 process.on('SIGTERM', handleSignal);
+
+async function handleSignal(signal) {
+  cleanup()
+}
