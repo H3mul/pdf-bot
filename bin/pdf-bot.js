@@ -624,7 +624,7 @@ function openConfig(delayQueueCreation = false) {
     throw new Error('No config file was found at ' + configPath)
   }
 
-  debug('Creating CLI using config file %s', configPath)
+  debug('Creating CLI; PID: %s; Using config file %s', process.pid, configPath)
   merge(configuration, require(configPath))
 
   if (!fs.existsSync(configuration.storagePath)) {
