@@ -96,7 +96,7 @@ program
       postPushCommand: apiOptions.postPushCommand,
       token: apiOptions.token
     }).listen(port, function() {
-      debug('Listening to port %d', port)
+      debug('API Listening to port %d', port)
     })
   })
 
@@ -713,6 +713,7 @@ async function cleanup() {
 }
 
 function handleDbError(e) {
+  if (e) debug(`Exiting on error: ${e.name}`)
   cleanup()
 }
 
