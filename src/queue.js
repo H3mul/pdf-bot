@@ -113,8 +113,8 @@ async function isBusy (db) {
   return false
 }
 
-function purge (db, failed = false, pristine = false, maxTries = 5) {
-  return db.purge(failed, pristine, maxTries)
+function purge (db, failed = false, pristine = false, maxTries = 5, age) {
+  return db.purge(failed, pristine, maxTries, age)
 }
 
 function setIsBusy(db, isBusy) {

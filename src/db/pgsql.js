@@ -176,16 +176,20 @@ function isBusy (db) {
   })
 }
 
-function purge (db, failed = false, pristine = false, maxTries = 5) {
-  var query = 'DELETE FROM jobs WHERE (completed_at is not null)'
-  var params = (failed || pristine) ? [ maxTries ] : []
+function purge (db, failed = false, pristine = false, maxTries = 5, age = "0s") {
+  var query = 'DELETE FROM jobs WHERE (completed_at < (NOW()::timestamp - $1::interval))'
+  var params = [ age ]
+
+  if (failed || pristine) {
+    params.push(maxTries)
+  }
 
   if (failed) {
-    query += ' OR (completed_at is null and jsonb_array_length(generations) >= $1)'
+    query += ' OR (completed_at is null and jsonb_array_length(generations) >= $2)'
   }
 
   if (pristine) {
-    query += ' OR (completed_at is null and jsonb_array_length(generations) < $1)'
+    query += ' OR (completed_at is null and jsonb_array_length(generations) < $2)'
   }
 
   return db.query(query, params)

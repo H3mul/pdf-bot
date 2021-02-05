@@ -349,14 +349,14 @@ program
   })
 
 program
-  .command('purge')
+  .command('purge [age]')
   .description('Will remove all completed jobs')
   .option('--failed', 'Remove all failed jobs')
   .option('--new', 'Remove all new jobs')
-  .action(function (options) {
+  .action(function (age, options) {
     openConfig()
 
-    return queue.purge(options.failed, options.new, configuration.queue.generationMaxTries)
+    return queue.purge(options.failed, options.new, configuration.queue.generationMaxTries, age)
       .then(function () {
         queue.close()
         console.log('The queue was purged.')
