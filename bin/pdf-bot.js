@@ -704,9 +704,9 @@ function formatDate(input) {
 }
 
 function handleDbError(e) {
+  console.error("DB error")
   console.error(e)
-  queue.close()
-  process.exit(1)
+  handleSignal()
 }
 
 async function handleSignal(signal) {
