@@ -3,7 +3,7 @@ var isValidUrl = function (url) {
 }
 
 function getCurrentDateTimeAsString() {
-  return (new Date()).toUTCString()
+  return (new Date()).toLocaleString("en-US", { timeZoneName: "short" })
 }
 
 module.exports = {
