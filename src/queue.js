@@ -1,5 +1,5 @@
 var uuid = require('uuid')
-var debug = require('debug')('pdf:db')
+var debug = require('./debug')('pdf:db')
 var error = require('./error')
 var webhook = require('./webhook')
 var utils = require('./utils')

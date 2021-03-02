@@ -1,7 +1,7 @@
 // these need to occur after dotenv
 var express = require('express')
 var bodyParser = require('body-parser')
-var debug = require('debug')('pdf:api')
+var debug = require('./debug')('pdf:api')
 var error = require('./error')
 var childProcess = require('child_process')
 

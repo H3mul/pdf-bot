@@ -2,7 +2,7 @@
 
 var fs = require('fs')
 var path = require('path')
-var debug = require('debug')('pdf:cli')
+var debug = require('../src/debug')('pdf:cli')
 var Table = require('cli-table')
 var program = require('commander');
 var merge = require('lodash.merge')

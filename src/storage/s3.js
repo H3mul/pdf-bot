@@ -1,4 +1,4 @@
-var debug = require('debug')('pdf:s3')
+var debug = require('./debug')('pdf:s3')
 var s3 = require('s3')
 var path = require('path')
 

@@ -1,5 +1,5 @@
 var crypto = require('crypto')
-var debug = require('debug')('pdf:webhook')
+var debug = require('./debug')('pdf:webhook')
 var fetch = require('node-fetch')
 var uuid = require('uuid')
 var error = require('./error')
